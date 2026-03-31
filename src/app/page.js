@@ -11,11 +11,11 @@ export default function Home() {
     try {
       const res = await fetch("/api/joke");
       const data = await res.json();
-      if (res.status ==!200) {
-        alert(data.message ||data.error);
+      if (res.status === 429 || res.status === 404){ {
+        alert(data.message);
         setJoke("");
         return;
-    }
+    }}
       setJoke(data.joke);
     } catch (error) {
       console.error("Error fetching joke:", error);
