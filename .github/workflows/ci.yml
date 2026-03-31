@@ -23,30 +23,31 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      # This is the "Gatekeeper". It checks for syntax errors & build fails.
       - name: Build Next.js
         run: npm run build
         env:
-          # Left side = What your CODE looks for
-          # Right side = What you named it in GITHUB SECRETS
+          # --- CLERK ---
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
           CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
           
-          # Match these to your new names!
-          DATABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          UPSTASH_REDIS_REST_URL: ${{ secrets.NEXT_PUBLIC_REDIS_URL }}
-          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.NEXT_PUBLIC_REDIS_TOKEN }}
+          # --- SUPABASE (Matched to your createClient config) ---
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          
+          # --- REDIS (Matched to your new Redis() config) ---
+          NEXT_PUBLIC_REDIS_URL: ${{ secrets.NEXT_PUBLIC_REDIS_URL }}
+          NEXT_PUBLIC_REDIS_TOKEN: ${{ secrets.NEXT_PUBLIC_REDIS_TOKEN }}
 
       - name: Create GitHub Release
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ github.run_number }}
+          tag_name: v1.0.${{ github.run_number }}
           name: Release v1.0.${{ github.run_number }}
           body: |
-            Automated release for QuipVault.
-            - Implemented Sliding Window Rate Limiting (Redis/Lua)
-            - Fixed Frontend State rendering
+            Automated production release for QuipVault.
+            - Validated environment mapping for Supabase & Upstash.
+            - Atomic Redis/Lua Sliding Window Rate Limiting.
+            - Frontend React state synchronization.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
