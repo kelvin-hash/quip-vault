@@ -1,0 +1,47 @@
+name: QuipVault CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install
+
+      # This is the "Gatekeeper". It checks for syntax errors & build fails.
+      - name: Build Next.js
+        run: npm run build
+        env:
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.CLERK_PUB_KEY }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          UPSTASH_REDIS_REST_URL: ${{ secrets.REDIS_URL }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.REDIS_TOKEN }}
+
+      - name: Create GitHub Release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}
+          name: Release v1.0.${{ github.run_number }}
+          body: |
+            Automated release for QuipVault.
+            - Implemented Sliding Window Rate Limiting (Redis/Lua)
+            - Fixed Frontend State rendering
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

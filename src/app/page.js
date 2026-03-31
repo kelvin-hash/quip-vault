@@ -4,18 +4,24 @@ import { useState } from "react";
 
 export default function Home() {
   const [joke, setJoke] = useState(null);
+  const [loading,setLoading]=useState(false);
   
   const fetchJoke = async () => {
+    setLoading(true)
     try {
       const res = await fetch("/api/joke");
       const data = await res.json();
-      if (res.status !== 200) {
-        alert(data.error);
+      if (res.status ==!200) {
+        alert(data.message ||data.error);
+        setJoke("");
         return;
     }
-      setJoke(data.Joke);
+      setJoke(data.joke);
     } catch (error) {
       console.error("Error fetching joke:", error);
+    }
+    finally{
+      setLoading(false);
     }
   };
   return (
@@ -36,9 +42,10 @@ export default function Home() {
       </h1>
       <button
         onClick={fetchJoke}
+        disabled={loading}
         className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
       >
-        Fetch a Random Joke
+        {loading ? "bet this will make you crack" : "Fetch a Random Joke"}
       </button>
       {joke && (
         <div className="mt-6 p-4 bg-white rounded shadow">
